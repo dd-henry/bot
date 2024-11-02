@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cinema Chatbot</title>
+    <!-- <script src="script.js"></script> -->
+    <style>
+      /* Estilos básicos para o layout do chat */
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f0f0f0;
+        margin: 0;
+      }
+
+      #chat-container {
+        width: 400px;
+        max-width: 100%;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #chat-header {
+        background-color: #075e54;
+        color: #ffffff;
+        padding: 10px;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      #chat-box {
+        flex-grow: 1;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .message {
+        display: inline-block;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        max-width: 80%;
+      }
+
+      .bot-message {
+        background-color: #dcf8c6;
+        align-self: flex-start;
+      }
+
+      .user-message {
+        background-color: #34b7f1;
+        color: #ffffff;
+        align-self: flex-end;
+      }
+
+      #chat-input-container {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+      }
+
+      #chat-input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+
+      #send-btn {
+        background-color: #075e54;
+        color: white;
+        border: none;
+        padding: 10px;
+        margin-left: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-container">
+      <div id="chat-header">Cinema Chatbot</div>
+      <div id="chat-box">
+        <!-- As mensagens serão adicionadas aqui dinamicamente -->
+      </div>
+      <div id="chat-input-container">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Digite sua mensagem..."
+        />
+        <button id="send-btn">Enviar</button>
+      </div>
+    </div>
+    <script>
+      const chatBox = document.getElementById("chat-box");
+      const chatInput = document.getElementById("chat-input");
+      const sendBtn = document.getElementById("send-btn");
+
+      // Armazena o estado do chatbot
+      let pedido = {};
+      let stage = "aguardando_inicio";
+
+      // Função para adicionar uma mensagem ao chat
+      function addMessage(message, sender) {
+        const messageElement = document.createElement("div");
+        messageElement.classList.add(
+          "message",
+          sender === "bot" ? "bot-message" : "user-message"
+        );
+        messageElement.innerHTML = message.replace(/\n/g, "<br>");
+        messageElement.textContent = message;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      // Processa a entrada do usuário com base no estágio atual
+      function processUserMessage(userMessage) {
+        userMessage = userMessage.toLowerCase();
+
+        if (stage === "aguardando_inicio") {
+          addMessage("Bem-vindo ao Cinema! Como posso ajudar?", "bot");
+          stage = "inicio"; // Muda para o estágio de início após a primeira mensagem
+          showMainMenu();
+          return; // Sai da função após a primeira resposta
+        }
+
+        switch (stage) {
+          case "inicio":
+            handleMainMenu(userMessage);
+            break;
+          case "comprar_ingresso_dia":
+            handleIngressoDia(userMessage);
+            break;
+          case "comprar_ingresso_filme":
+            handleIngressoFilme(userMessage);
+            break;
+          case "comprar_ingresso_horario":
+            handleIngressoHorario(userMessage);
+            break;
+          case "comprar_ingresso_sessao":
+            handleIngressoSessao(userMessage);
+            break;
+          case "comprar_ingresso_audio":
+            handleIngressoAudio(userMessage);
+            break;
+          case "comprar_ingresso_assento":
+            handleIngressoAssento(userMessage);
+            break;
+          case "loja_conveniencia":
+            handleConveniencia(userMessage);
+            break;
+          case "sala_privada":
+            handleSalaPrivada(userMessage);
+            break;
+          case "assinatura":
+            handleAssinatura(userMessage);
+            break;
+          case "ver_pedido":
+            viewPedido();
+            stage = "inicio";
+            break;
+          case "finalizar_pedido":
+            finalizePedido();
+            stage = "inicio";
+            break;
+          default:
+            addMessage("Opção inválida. Tente novamente.", "bot");
+            stage = "inicio";
+        }
+      }
+
+      // Funções de cada estágio
+      function handleMainMenu(option) {
+        switch (option) {
+          case "1":
+            addMessage(
+              "Escolha o dia da semana: \n1- Segunda\n 2- Terça\n 3- Quarta\n 4- Quinta\n 5- Sexta\n 6- Sabado\n 7- Domingo",
+              "bot"
+            );
+            stage = "comprar_ingresso_dia";
+            break;
+          case "2":
+            addMessage(
+              "Escolha um item da loja:\n1. Pipoca\n2. Salgadinhos\n3. Bebidas\n4. Doces",
+              "bot"
+            );
+            stage = "loja_conveniencia";
+            break;
+          case "3":
+            addMessage(
+              "Escolha o dia da semana para sala privada (1-Segunda a 7-Domingo):",
+              "bot"
+            );
+            stage = "sala_privada";
+            break;
+          case "4":
+            addMessage(
+              "Escolha o tipo de assinatura:\n1. Simples\n2. Médio\n3. Top",
+              "bot"
+            );
+            stage = "assinatura";
+            break;
+          case "5":
+            addMessage(
+              "Para falar com um atendente, acesse o link: https://wa.me/559999999999",
+              "bot"
+            );
+            stage = "inicio";
+            break;
+          case "6":
+            addMessage("Verificando pedido...", "bot");
+            stage = "ver_pedido";
+            break;
+          case "7":
+            addMessage("Finalizando pedido...", "bot");
+            stage = "finalizar_pedido";
+            break;
+          default:
+            addMessage("Opção inválida. Escolha uma opção entre 1 e 7.", "bot");
+        }
+      }
+
+      function handleIngressoDia(dia) {
+        pedido.dia = dia;
+        addMessage(
+          "Escolha o filme:\n1. Filme A\n2. Filme B\n3. Filme C",
+          "bot"
+        );
+        stage = "comprar_ingresso_filme";
+      }
+
+      function handleIngressoFilme(filme) {
+        pedido.filme = filme;
+        addMessage(
+          "Escolha o horário:\n1. 14:00\n2. 16:30\n3. 19:00\n4. 21:30",
+          "bot"
+        );
+        stage = "comprar_ingresso_horario";
+      }
+
+      function handleIngressoHorario(horario) {
+        pedido.horario = horario;
+        addMessage("Escolha o tipo de sessão (3D ou 2D):", "bot");
+        stage = "comprar_ingresso_sessao";
+      }
+
+      function handleIngressoSessao(sessao) {
+        pedido.sessao = sessao;
+        addMessage("Escolha o áudio (Dublado ou Legendado):", "bot");
+        stage = "comprar_ingresso_audio";
+      }
+
+      function handleIngressoAudio(audio) {
+        pedido.audio = audio;
+        addMessage("Escolha o assento (Exemplo: A1, B2):", "bot");
+        stage = "comprar_ingresso_assento";
+      }
+
+      function handleIngressoAssento(assento) {
+        pedido.assento = assento;
+        addMessage("Ingresso adicionado ao pedido.", "bot");
+        stage = "inicio";
+        showMainMenu();
+      }
+
+      function handleConveniencia(item) {
+        addMessage("Item adicionado ao pedido: " + item, "bot");
+        stage = "inicio";
+        showMainMenu();
+      }
+
+      function handleSalaPrivada(dia) {
+        pedido.salaPrivada = { dia };
+        addMessage("Sala privada reservada!", "bot");
+        stage = "inicio";
+        showMainMenu();
+      }
+
+      function handleAssinatura(tipo) {
+        pedido.assinatura = tipo;
+        addMessage("Assinatura adicionada ao pedido.", "bot");
+        stage = "inicio";
+        showMainMenu();
+      }
+
+      function viewPedido() {
+        addMessage("Pedido Atual: " + JSON.stringify(pedido, null, 2), "bot");
+      }
+
+      function finalizePedido() {
+        addMessage("Pedido finalizado! Obrigado!", "bot");
+        viewPedido();
+        pedido = {}; // Limpa o pedido
+      }
+
+      function showMainMenu() {
+        addMessage(
+          "Escolha uma opção:\n1. Comprar Ingressos\n2. Loja de Conveniência\n3. Sala Privada\n4. Assinatura\n5. Falar com Atendente\n6. Ver Pedido Atual\n7. Finalizar Pedido",
+          "bot"
+        );
+      }
+
+      // Evento de clique no botão de enviar
+      sendBtn.addEventListener("click", () => {
+        const userMessage = chatInput.value.trim();
+        if (userMessage) {
+          addMessage(userMessage, "user");
+          processUserMessage(userMessage);
+          chatInput.value = "";
+        }
+      });
+
+      // Evento de pressionar Enter para enviar
+      chatInput.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          sendBtn.click();
+        }
+      });
+    </script>
+  </body>
+</html>
